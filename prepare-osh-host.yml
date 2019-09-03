@@ -1,0 +1,80 @@
+---
+
+- name: Prepare OSH host
+  hosts: all
+  remote_user: ubuntu
+  tasks:
+
+    - name: Install sudoers file
+      become: yes
+      copy:
+        dest: /etc/sudoers.d/50-root
+        content: root ALL=(ALL) NOPASSWD:ALL
+        owner: root
+        group: root
+        mode: '440'
+
+    - name: Configure git name
+      git_config:
+        scope: global
+        name: user.name
+        value: 'Nicolas Bock'
+
+    - name: Configure git email
+      git_config:
+        scope: global
+        name: user.email
+        value: 'nicolas.bock@suse.com'
+
+    - name: Configure vim for user
+      lineinfile:
+        create: yes
+        line: set background=dark
+        path: "${HOME}/.vimrc"
+        regexp: 'set (bg|background)='
+
+    - name: Configure vim for root
+      become: yes
+      lineinfile:
+        create: yes
+        line: set background=dark
+        path: "${HOME}/.vimrc"
+        regexp: 'set (bg|background)='
+
+    - name: Clone openstack-helm-infra
+      git:
+        dest: "${HOME}/openstack-helm-infra"
+        repo: https://opendev.org/openstack/openstack-helm-infra.git
+
+    - name: Clone openstack-helm
+      git:
+        dest: "${HOME}/openstack-helm"
+        repo: https://opendev.org/openstack/openstack-helm.git
+
+    - name: Copy patch
+      copy:
+        src: 0001-Local-modifications.patch
+        dest: /tmp
+
+    - name: Patch infra
+      shell: |
+        git am --abort
+        git reset --hard master
+        git am /tmp/0001-Local-modifications.patch
+      args:
+        chdir: "${HOME}/openstack-helm-infra"
+
+    - name: Install additional packages
+      become: yes
+      apt:
+        install_recommends: no
+        update_cache: yes
+        name:
+          - ca-certificates
+          - git
+          - make
+          - jq
+          - nmap
+          - curl
+          - uuid-runtime
+          - bc
