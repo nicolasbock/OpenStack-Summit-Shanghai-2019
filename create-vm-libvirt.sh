@@ -108,7 +108,7 @@ remove_ssh_host_key() {
 check_exisiting_vm
 create_disk
 resize_partition
-copy_ssh_keys
+#copy_ssh_keys
 create_cloudinit
 create_vm
 remove_ssh_host_key
