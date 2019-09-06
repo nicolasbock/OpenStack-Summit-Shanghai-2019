@@ -74,6 +74,7 @@ EOF
   fi
   mkisofs -o config.iso \
     -rational-rock \
+    -V cidata \
     -J meta-data user-data
 }
 
