@@ -70,11 +70,15 @@
         install_recommends: no
         update_cache: yes
         name:
-          - ca-certificates
-          - git
-          - make
-          - jq
-          - nmap
-          - curl
-          - uuid-runtime
           - bc
+          - build-essential
+          - ca-certificates
+          - curl
+          - git
+          - jq
+          - make
+          - nmap
+          - python-dev
+          - python-pip
+          - python-setuptools
+          - uuid-runtime
