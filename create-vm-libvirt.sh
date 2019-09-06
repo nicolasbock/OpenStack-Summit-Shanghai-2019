@@ -99,9 +99,16 @@ check_exisiting_vm() {
   fi
 }
 
+remove_ssh_host_key() {
+  local vm_fip
+  vm_fip=$(sudo virsh domifaddr nbock-osh | grep vnet0 | awk '{print $4}' | cut -d '/' -f 1)
+  ssh-keygen -R ${vm_fip}
+}
+
 check_exisiting_vm
 create_disk
 resize_partition
 copy_ssh_keys
 create_cloudinit
 create_vm
+remove_ssh_host_key
