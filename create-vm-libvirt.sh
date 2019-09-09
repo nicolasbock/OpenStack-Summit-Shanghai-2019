@@ -23,6 +23,13 @@ resize_partition() {
     resizepart 1 100% \
     print
   sudo qemu-nbd --disconnect /dev/nbd0
+  for (( i = 0; i < 5; i++ )); do
+    if sudo modprobe --remove --verbose nbd; then
+      break
+    else
+      sleep 1
+    fi
+  done
 }
 
 copy_ssh_keys() {
@@ -40,6 +47,13 @@ copy_ssh_keys() {
   sudo chown -R 1000:1000 "${mountpoint}/home/ubuntu"
   sudo umount ${mountpoint}
   sudo qemu-nbd --disconnect /dev/nbd0
+  for (( i = 0; i < 5; i++ )); do
+    if sudo modprobe --remove --verbose nbd; then
+      break
+    else
+      sleep 1
+    fi
+  done
 }
 
 create_disk() {
