@@ -4,7 +4,6 @@ set -x -e
 
 : ${OSH_HOSTNAME:=nbock-osh}
 : ${IMAGE:=xenial-server-cloudimg-amd64-disk1.img}
-#: ${IMAGE:=cirros-0.4.0-x86_64-disk.img}
 : ${POOL:=cloud-pool}
 : ${DISKSIZE:=80}
 : ${MEMORY:=$((20 * 1024))}
