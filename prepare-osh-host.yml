@@ -5,6 +5,28 @@
   remote_user: ubuntu
   tasks:
 
+    - name: Install additional packages
+      become: yes
+      apt:
+        install_recommends: no
+        update_cache: yes
+        name:
+          - bc
+          - build-essential
+          - ca-certificates
+          - curl
+          - git
+          - jq
+          - make
+          - nmap
+          - python-dev
+          - python-pip
+          - python-setuptools
+          - uuid-runtime
+      async: 1000
+      poll: 0
+      register: package_sleeper
+
     - name: Install sudoers file
       become: yes
       copy:
@@ -64,21 +86,10 @@
       args:
         chdir: "${HOME}/openstack-helm-infra"
 
-    - name: Install additional packages
+    - name: Check status of package install
       become: yes
-      apt:
-        install_recommends: no
-        update_cache: yes
-        name:
-          - bc
-          - build-essential
-          - ca-certificates
-          - curl
-          - git
-          - jq
-          - make
-          - nmap
-          - python-dev
-          - python-pip
-          - python-setuptools
-          - uuid-runtime
+      async_status:
+        jid: "{{ package_sleeper.ansible_job_id }}"
+      register: package_result
+      until: package_result.finished
+      retries: 500
