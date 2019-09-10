@@ -75,18 +75,6 @@
         repo: https://opendev.org/openstack/openstack-helm.git
         force: yes
 
-    - name: Copy patch
-      copy:
-        src: 0001-Local-modifications.patch
-        dest: /tmp
-
-    - name: Patch infra
-      shell: |
-        git am --abort
-        git reset --hard master
-        git am /tmp/0001-Local-modifications.patch
-      args:
-        chdir: "${HOME}/openstack-helm-infra"
 
     - name: Check status of package install
       become: yes
