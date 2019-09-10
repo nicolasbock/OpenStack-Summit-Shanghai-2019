@@ -67,11 +67,13 @@
       git:
         dest: "${HOME}/openstack-helm-infra"
         repo: https://opendev.org/openstack/openstack-helm-infra.git
+        force: yes
 
     - name: Clone openstack-helm
       git:
         dest: "${HOME}/openstack-helm"
         repo: https://opendev.org/openstack/openstack-helm.git
+        force: yes
 
     - name: Copy patch
       copy:
