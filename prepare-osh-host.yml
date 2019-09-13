@@ -85,12 +85,14 @@
     - name: Set environment variables
       lineinfile:
         path: "${HOME}/.bashrc"
-        regexp: "{{ item.key }} *="
+        regexp: "^[^#]{{ item.key }} *="
         line: "export {{ item.key }}={{ item.value }}"
       with_dict:
           - OPENSTACK_RELEASE: "{{ openstack_release }}"
           - CONTAINER_DISTRO_NAME: "{{ container_distro_name }}"
           - CONTAINER_DISTRO_VERSION: "{{ container_distro_version }}"
+          - CLIFF_FIT_WIDTH: "1"
+          - OS_CLOUD: openstack_helm
 
     - name: Check status of package install
       become: yes
