@@ -10,12 +10,18 @@ set -x -e
 
 resize_partition() {
   sudo modprobe --verbose nbd
+  local success=0
   for (( i = 0; i < 5; i++ )); do
     if sudo qemu-nbd --connect=/dev/nbd0 "${image_path}"; then
+      success=1
       break
     fi
     sleep 1
   done
+  if (( ${success} != 1 )); then
+    echo "could not connect to image"
+    exit 1
+  fi
   sudo parted --align=opt --script \
     /dev/nbd0 \
     unit GB \
