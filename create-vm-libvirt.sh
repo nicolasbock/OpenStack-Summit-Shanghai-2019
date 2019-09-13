@@ -4,9 +4,12 @@ set -x -e
 
 : ${OSH_HOSTNAME:=nbock-osh}
 : ${IMAGE:=xenial-server-cloudimg-amd64-disk1.img}
-: ${POOL:=cloud-pool}
+: ${IMAGE_POOL:=cloud-pool}
+: ${POOL:=default}
 : ${DISKSIZE:=80}
-: ${MEMORY:=$((20 * 1024))}
+: ${MEMORY:=$((32 * 1024))}
+: ${VCPUS:=4}
+: ${IOTHREADS:=8}
 
 resize_partition() {
   sudo modprobe --verbose nbd
@@ -28,14 +31,10 @@ resize_partition() {
     print \
     resizepart 1 100% \
     print
-  sudo qemu-nbd --disconnect /dev/nbd0
-  for (( i = 0; i < 5; i++ )); do
-    if sudo modprobe --remove --verbose nbd; then
-      break
-    else
-      sleep 1
-    fi
-  done
+  if ! sudo qemu-nbd --disconnect /dev/nbd0; then
+    echo "could not disconnect nbd0"
+    exit 1
+  fi
 }
 
 copy_ssh_keys() {
@@ -62,22 +61,36 @@ copy_ssh_keys() {
   done
 }
 
-create_disk() {
-  local base_image_path
-  local base_image_dirname
-
+delete_disk() {
   if sudo virsh vol-info "${OSH_HOSTNAME}.qcow2" --pool "${POOL}" > /dev/null 2>&1; then
     echo "Disk ${OSH_HOSTNAME}.qcow2 already exists, deleting it..."
     sudo virsh vol-delete "${OSH_HOSTNAME}.qcow2" --pool "${POOL}"
   fi
+}
 
-  base_image_path=$(sudo virsh vol-path "${IMAGE}" --pool "${POOL}")
+create_disk() {
+  local base_image_path
+  local base_image_dirname
+  local tempdir
+  local image_size
+
+  delete_disk
+
+  base_image_path=$(sudo virsh vol-path "${IMAGE}" --pool "${IMAGE_POOL}")
   base_image_dirname=$(dirname ${base_image_path})
-  image_path="${base_image_dirname}/${OSH_HOSTNAME}.qcow2"
+
+  tempdir=$(mktemp --directory)
+  image_path="${tempdir}/${OSH_HOSTNAME}.qcow2"
 
   sudo qemu-img create -f qcow2 -b "${base_image_path}" "${image_path}" $(( ${DISKSIZE} ))G
-  sudo virsh pool-refresh "${POOL}"
   sudo qemu-img info "${image_path}"
+
+  image_size=$(du --bytes /tmp/tmp.ivXm2WUKxe/nbock-osh.qcow2 | awk '{print $1}')
+  sudo virsh vol-create-as "${POOL}" "${OSH_HOSTNAME}.qcow2" "${image_size}" --format raw
+  sudo virsh vol-upload "${OSH_HOSTNAME}.qcow2" "${image_path}" --pool "${POOL}"
+
+  rm -rf "${tempdir}"
+  image_path=$(sudo virsh vol-path "${OSH_HOSTNAME}.qcow2" --pool "${POOL}")
 }
 
 create_cloudinit() {
@@ -100,22 +113,26 @@ EOF
 create_vm() {
   sudo virt-install \
     --name "${OSH_HOSTNAME}" \
-    --memory "${MEMORY}" \
+    --memory "$(( ${MEMORY} ))" \
+    --vcpus "$(( ${VCPUS} ))" \
+    --cpu host-passthrough,cache.mode=passthrough \
+    --iothreads "$(( ${IOTHREADS} ))" \
     --network default \
     --os-variant ubuntu16.04 \
-    --disk "${image_path}" \
+    --disk vol="${POOL}/${OSH_HOSTNAME}.qcow2" \
     --import \
     --disk path=config.iso,device=cdrom \
     --noautoconsole
   sudo virsh console "${OSH_HOSTNAME}"
 }
 
-check_exisiting_vm() {
+delete_exisiting_vm() {
   if sudo virsh dominfo "${OSH_HOSTNAME}" > /dev/null 2>&1; then
     echo "VM already exists"
     sudo virsh destroy "${OSH_HOSTNAME}" || echo "domain was not running"
-    sudo virsh undefine "${OSH_HOSTNAME}"
+    sudo virsh undefine "${OSH_HOSTNAME}" || echo "domain was not defined"
   fi
+  delete_disk
 }
 
 remove_ssh_host_key() {
@@ -124,7 +141,7 @@ remove_ssh_host_key() {
   ssh-keygen -R ${vm_fip}
 }
 
-check_exisiting_vm
+delete_exisiting_vm
 create_disk
 resize_partition
 #copy_ssh_keys
