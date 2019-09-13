@@ -1,0 +1,46 @@
+---
+
+- name: Deploy OpenStack Helm developer environment
+  hosts: all
+  remote_user: ubuntu
+  tasks:
+
+    - name: Run scripts
+      include_role:
+        name: run_script
+      vars:
+        description: "{{ item.description }}"
+        script: "{{ item.script }}"
+      with_items:
+        - description: Deploy k8s
+          script: ./tools/deployment/developer/common/010-deploy-k8s.sh
+        - description: Setup client
+          script: ./tools/deployment/developer/common/020-setup-client.sh
+        - description: Ingress
+          script: ./tools/deployment/developer/common/030-ingress.sh
+        - description: NFS provisioner
+          script: ./tools/deployment/developer/nfs/040-nfs-provisioner.sh
+        - description: Deploy mariadb
+          script: ./tools/deployment/developer/nfs/050-mariadb.sh
+        - description: Deploy rabbitmq
+          script: ./tools/deployment/developer/nfs/060-rabbitmq.sh
+        - description: Deploy memcached
+          script: ./tools/deployment/developer/nfs/070-memcached.sh
+        - description: Deploy Keystone
+          script: ./tools/deployment/developer/nfs/080-keystone.sh
+        - description: Deploy Heat
+          script: ./tools/deployment/developer/nfs/090-heat.sh
+        - description: Deploy Horizon
+          script: ./tools/deployment/developer/nfs/100-horizon.sh
+        - description: Deploy Glance
+          script: ./tools/deployment/developer/nfs/120-glance.sh
+        - description: Deploy Open vSwitch
+          script: ./tools/deployment/developer/nfs/140-openvswitch.sh
+        - description: Deploy libvirt
+          script: ./tools/deployment/developer/nfs/150-libvirt.sh
+        - description: Deploy compute kit (Neutron and Nova)
+          script: ./tools/deployment/developer/nfs/160-compute-kit.sh
+        - description: Setup gateway
+          script: ./tools/deployment/developer/nfs/170-setup-gateway.sh
+        - description: Exercise the deployment
+          script: ./tools/deployment/developer/common/900-use-it.sh
