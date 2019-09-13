@@ -1,7 +1,14 @@
 ---
 
-- name: Prepare OSH host
+- name: Prepare OpenStack Helm host
   hosts: all
+  vars:
+    # openstack_release: ocata
+    # container_distro_name: ubuntu
+    # container_distro_version: xenial
+    openstack_release: rocky
+    container_distro_name: opensuse
+    container_distro_version: '15'
   remote_user: ubuntu
   tasks:
 
@@ -75,6 +82,15 @@
         repo: https://opendev.org/openstack/openstack-helm.git
         force: yes
 
+    - name: Set environment variables
+      lineinfile:
+        path: "${HOME}/.bashrc"
+        regexp: "{{ item.key }} *="
+        line: "export {{ item.key }}={{ item.value }}"
+      with_dict:
+          - OPENSTACK_RELEASE: "{{ openstack_release }}"
+          - CONTAINER_DISTRO_NAME: "{{ container_distro_name }}"
+          - CONTAINER_DISTRO_VERSION: "{{ container_distro_version }}"
 
     - name: Check status of package install
       become: yes
