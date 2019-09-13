@@ -1,6 +1,10 @@
 #!/bin/bash
 
-set -x -e
+set -e
+
+: ${OPENSTACK_RELEASE:=rocky}
+: ${CONTAINER_DISTRO_NAME:=opensuse}
+: ${CONTAINER_DISTRO_VERSION:=15}
 
 STEPS=(
   ./tools/deployment/developer/common/010-deploy-k8s.sh
@@ -29,7 +33,15 @@ fi
 OSH_IP=$1
 
 for step in "${STEPS[@]}"; do
-  result=$(ssh ubuntu@${OSH_IP} "cd openstack-helm && ${step}")
+  echo "******************************************"
+  echo "Running ${step}"
+  echo
+  result=$(ssh \
+    ubuntu@${OSH_IP} cd openstack-helm \&\& \
+    OPENSTACK_RELEASE=${OPENSTACK_RELEASE} \
+    CONTAINER_DISTRO_NAME=${CONTAINER_DISTRO_NAME} \
+    CONTAINER_DISTRO_VERSION=${CONTAINER_DISTRO_VERSION} \
+    ${step})
   if (( ${result} != 0 )); then
     echo "remote command ${step} failed with ${result}"
     exit 1
