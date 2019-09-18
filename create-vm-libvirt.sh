@@ -85,7 +85,7 @@ create_disk() {
   sudo qemu-img create -f qcow2 -b "${base_image_path}" "${image_path}" $(( ${DISKSIZE} ))G
   sudo qemu-img info "${image_path}"
 
-  image_size=$(du --bytes /tmp/tmp.ivXm2WUKxe/nbock-osh.qcow2 | awk '{print $1}')
+  image_size=$(du --bytes ${image_path} | awk '{print $1}')
   sudo virsh vol-create-as "${POOL}" "${OSH_HOSTNAME}.qcow2" "${image_size}" --format raw
   sudo virsh vol-upload "${OSH_HOSTNAME}.qcow2" "${image_path}" --pool "${POOL}"
 
