@@ -94,6 +94,13 @@
           - CLIFF_FIT_WIDTH: "1"
           - OS_CLOUD: openstack_helm
 
+    - name: Copy deployment script
+      template:
+        src: deploy-osh-developer-environment.sh.j2
+        dest: "${HOME}/deploy-osh-developer-environment.sh"
+        mode: "0755"
+        owner: ubuntu
+
     - name: Check status of package install
       become: yes
       async_status:
