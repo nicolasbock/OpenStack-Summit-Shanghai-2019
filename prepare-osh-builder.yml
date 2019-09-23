@@ -19,6 +19,7 @@
       become: yes
       zypper:
         name:
+          - ansible
           - git-core
           - mkisofs
 
@@ -94,4 +95,5 @@
     - name: Clone repository
       git:
         dest: "${HOME}/OpenStack-Summit-Shanghai-2019"
+        update: yes
         repo: https://github.com/nicolasbock/OpenStack-Summit-Shanghai-2019.git
