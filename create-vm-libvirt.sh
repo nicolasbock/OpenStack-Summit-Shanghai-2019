@@ -9,7 +9,6 @@ set -x -e
 : ${DISKSIZE:=80}
 : ${MEMORY:=$((32 * 1024))}
 : ${VCPUS:=4}
-: ${IOTHREADS:=8}
 
 resize_partition() {
   sudo modprobe --verbose nbd
@@ -116,7 +115,6 @@ create_vm() {
     --memory "$(( ${MEMORY} ))" \
     --vcpus "$(( ${VCPUS} ))" \
     --cpu host-passthrough,cache.mode=passthrough \
-    --iothreads "$(( ${IOTHREADS} ))" \
     --network default \
     --os-variant ubuntu16.04 \
     --disk vol="${POOL}/${OSH_HOSTNAME}.qcow2" \
