@@ -36,6 +36,13 @@ resize_partition() {
   fi
 }
 
+create_ssh_key() {
+  if [[ ! -e ~/.ssh/id_rsa.pub ]]; then
+    echo "Creating new ssh key"
+    ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+  fi
+}
+
 copy_ssh_keys() {
   local mountpoint
   mountpoint=$(mktemp -d)
@@ -142,6 +149,7 @@ remove_ssh_host_key() {
 delete_exisiting_vm
 create_disk
 resize_partition
+create_ssh_key
 #copy_ssh_keys
 create_cloudinit
 create_vm
