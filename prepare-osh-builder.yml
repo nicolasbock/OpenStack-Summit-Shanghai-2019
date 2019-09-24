@@ -37,11 +37,24 @@
     - name: Create default pool
       become: yes
       virt_pool:
-        autostart: yes
-        command: define
-        state: active
         name: default
+        command: define
+        autostart: yes
         xml: "{{ lookup('template', 'default-pool.xml.j2') }}"
+      vars:
+        path: /var/lib/libvirt/images
+
+    - name: Start default pool
+      become: yes
+      virt_pool:
+        name: default
+        command: start
+
+    - name: Autostart default pool
+      become: yes
+      virt_pool:
+        name: default
+        autostart: yes
 
     - name: Check cloud image
       become: yes
