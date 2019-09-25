@@ -49,6 +49,7 @@
       virt_pool:
         name: default
         command: start
+      ignore_errors: yes
 
     - name: Autostart default pool
       become: yes
